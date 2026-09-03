@@ -259,6 +259,32 @@
       gap: 10px;
     }
 
+    .load-status {
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin-bottom: 16px;
+      font-size: 1rem;
+      line-height: 1.55;
+      word-break: keep-all;
+    }
+    .load-status.error {
+      background: rgba(239, 68, 68, 0.12);
+      border: 1px solid rgba(239, 68, 68, 0.5);
+      color: #fca5a5;
+    }
+    .load-status.stale {
+      background: rgba(245, 158, 11, 0.12);
+      border: 1px solid rgba(245, 158, 11, 0.45);
+      color: #fcd34d;
+    }
+
+    .btn-main:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      box-shadow: none;
+      transform: none;
+    }
+
     /* 2. 퀴즈 화면 */
     .quiz-status-bar {
       display: flex;
@@ -452,6 +478,29 @@
       color: #fcd34d;
       word-break: keep-all;
     }
+    .local-notice code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      background: rgba(0, 0, 0, 0.35);
+      padding: 1px 6px;
+      border-radius: 5px;
+      font-size: 0.92em;
+    }
+
+    .btn-reset-official {
+      display: block;
+      width: fit-content;
+      margin-top: 12px;
+      background: rgba(245, 158, 11, 0.18);
+      border: 1px solid rgba(245, 158, 11, 0.55);
+      color: #fcd34d;
+      padding: 7px 14px;
+      border-radius: 8px;
+      font-size: 0.92rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
     .local-notice strong {
       display: block;
       color: var(--primary-gold);
@@ -598,6 +647,7 @@
       .del-btn-custom:hover { background: #dc2626; color: white; }
       .btn-submit:hover { background: #fbbf24; }
       .btn-cancel:hover { background: #64748b; }
+      .btn-reset-official:hover { background: var(--primary-gold); color: #0f172a; }
     }
 
     /* ── 태블릿 ── */
@@ -660,6 +710,8 @@
 
       .local-notice { padding: 10px 12px; font-size: 0.86rem; margin-bottom: 14px; }
       .local-notice strong { font-size: 0.94rem; }
+      .btn-reset-official { font-size: 0.86rem; padding: 6px 12px; }
+      .load-status { padding: 12px 14px; font-size: 0.9rem; }
       .manage-box { max-height: 42vh; margin-bottom: 18px; }
       .manage-row { flex-wrap: wrap; padding: 12px 14px; }
       .manage-info { flex: 1 1 60%; }
@@ -788,7 +840,9 @@
           </div>
         </div>
 
-        <button class="btn-main" onclick="startQuiz()">
+        <div class="load-status" id="load-status" hidden></div>
+
+        <button class="btn-main" id="btn-start" onclick="startQuiz()">
           도전 시작하기 (START)
           <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
         </button>
@@ -848,9 +902,10 @@
       <!-- 4. 문제 관리 화면 -->
       <div id="screen-manage" class="screen">
         <div class="local-notice">
-          <strong>⚠️&nbsp; 등록한 문항은 이 브라우저에만 저장됩니다</strong>
-          다른 사람이 이 페이지에 접속해도 보이지 않고, 다른 기기·브라우저와도 공유되지 않습니다.
-          브라우저 사용 기록(사이트 데이터)을 지우면 사라지니 주의해 주세요.
+          <strong>⚠️&nbsp; 여기서 수정한 내용은 이 브라우저에만 저장됩니다</strong>
+          모든 접속자에게 보이는 공식 문항은 <code>questions.json</code> 파일이며, 이 화면의 수정은
+          내 브라우저에만 남습니다. 다른 사람·다른 기기에는 공유되지 않고, 공식 문항이 갱신되면 덮어씌워집니다.
+          <button class="btn-reset-official" onclick="resetToOfficial()">공식 문항으로 되돌리기</button>
         </div>
         <div class="manage-head">📋 등록된 문항 목록 (<span id="manage-count">0</span>)</div>
         <div class="manage-box" id="manage-list"></div>
@@ -887,19 +942,40 @@
   </div>
 
   <script>
-    // 기본 문제 세트 (브라우저 LocalStorage에 저장된 문항이 있으면 그쪽이 우선 적용됩니다)
-    const DEFAULT_QUESTIONS = [
-      { question: "주식 발행 회사가 파산할 경우, 주주는 채권자보다 회사 잔여재산에 대한 우선변제권을 갖는다.", answer: "X", explanation: "채권자가 주주보다 우선변제권을 가지며, 주주는 잔여재산 분배에서 최후순위입니다." },
-      { question: "ETF(상장지수펀드)는 펀드이지만 거래소에 상장되어 주식처럼 실시간 매매가 가능하다.", answer: "O", explanation: "ETF는 인덱스펀드를 거래소에 상장시켜 주식처럼 실시간 호가로 매매할 수 있는 상품입니다." },
-      { question: "채권 가격과 시장 금리는 서로 비례 관계(금리 상승 시 채권 가격 상승)에 있다.", answer: "X", explanation: "시장 금리가 오르면 기존 발행 채권의 표면금리 매력도가 낮아져 채권 가격은 하락(역의 관계)합니다." },
-      { question: "국내 정규 주식시장(코스피/코스닥)의 일일 가격제한폭은 전일 종가 대비 ±30%이다.", answer: "O", explanation: "한국거래소 규정상 정규 주식시장의 하루 상·하한가 가격제한폭은 기준가 대비 ±30%입니다." },
-      { question: "PER(주가수익비율)은 현재 주가를 주당순자산가치(BPS)로 나눈 지표이다.", answer: "X", explanation: "PER은 주가를 주당순이익(EPS)으로 나눈 값이며, 주가를 BPS로 나눈 지표는 PBR입니다." },
-      { question: "공매도는 주식을 빌려서 먼저 매도한 후, 주가가 하락하면 매수 상환하여 차익을 얻는 투자 기법이다.", answer: "O", explanation: "주가 하락을 예상하여 차입 매도 후 저가에 재매수(숏커버링)해 상환 차익을 내는 방식입니다." },
-      { question: "선물(Futures) 거래는 만기일에 정해진 가격으로 자산을 '인수할 권리'만을 사고파는 거래이다.", answer: "X", explanation: "권리만을 매매하는 것은 '옵션(Option)'이며, 선물 거래는 만기일에 결제를 이행해야 하는 계약적 '의무'가 발생합니다." }
-    ];
+    /* ────────────────────────────────────────────────────────────────
+       문항 원본은 questions.json 입니다.
+       문제를 바꾸려면 questions.json만 수정해서 배포하면 됩니다.
+       version 값을 함께 바꾸면 기존 접속자의 로컬 수정본도 새 문항으로 갱신됩니다.
+       ──────────────────────────────────────────────────────────────── */
+    const QUESTIONS_URL = "questions.json";
+    const STORAGE_KEY = "kofia_quiz_v2";
 
-    let questions = JSON.parse(localStorage.getItem("kofia_quiz_v1")) || DEFAULT_QUESTIONS;
-    function saveToStorage() { localStorage.setItem("kofia_quiz_v1", JSON.stringify(questions)); }
+    let questions = [];          // 실제로 출제에 쓰는 목록
+    let officialQuestions = [];  // questions.json에서 받은 원본
+    let questionSetVersion = null;
+    let isReady = false;
+
+    function saveToStorage() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({
+          version: questionSetVersion,
+          questions: questions
+        }));
+      } catch (err) {
+        console.warn("로컬 저장 실패", err);
+      }
+    }
+
+    function readStorage() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return null;
+        const data = JSON.parse(raw);
+        return (data && Array.isArray(data.questions) && data.questions.length) ? data : null;
+      } catch {
+        return null;
+      }
+    }
 
     let currentPool = [];
     let currentIndex = 0;
@@ -915,10 +991,78 @@
       return String(str == null ? "" : str).replace(/[&<>"']/g, ch => HTML_ESCAPES[ch]);
     }
 
-    function init() {
+    async function init() {
+      setLoadState("loading");
+
+      try {
+        const res = await fetch(QUESTIONS_URL, { cache: "no-store" });
+        if (!res.ok) throw new Error(`서버 응답 ${res.status}`);
+
+        const data = await res.json();
+        if (!Array.isArray(data.questions) || data.questions.length === 0) {
+          throw new Error("questions.json에 문항이 없습니다");
+        }
+
+        officialQuestions = data.questions;
+        questionSetVersion = data.version || null;
+
+        // 배포된 문항이 갱신되면(version 변경) 이 브라우저의 수정본은 새 문항으로 밀어낸다
+        const local = readStorage();
+        questions = (local && local.version === questionSetVersion)
+          ? local.questions
+          : officialQuestions.map(q => ({ ...q }));
+
+        isReady = true;
+        setLoadState("ready");
+      } catch (err) {
+        handleLoadFailure(err);
+      }
+
       selectedCount = Math.min(5, questions.length);
       updateCountDisplay();
       renderManageList();
+    }
+
+    /* questions.json을 못 읽었을 때 — 로컬에 남은 문항이라도 살려서 쓴다 */
+    function handleLoadFailure(err) {
+      console.warn("문항 로드 실패", err);
+      const local = readStorage();
+
+      if (local) {
+        questions = local.questions;
+        questionSetVersion = local.version;
+        isReady = true;
+        setLoadState("stale", "최신 문항을 불러오지 못해 이 브라우저에 저장된 문항으로 진행합니다.");
+        return;
+      }
+
+      isReady = false;
+      setLoadState("error", location.protocol === "file:"
+        ? "HTML 파일을 직접 열면 문항 파일(questions.json)을 읽을 수 없습니다. 배포된 웹 주소로 접속해 주세요."
+        : `문항 파일을 불러오지 못했습니다. (${err.message})`);
+    }
+
+    function setLoadState(state, message) {
+      const startBtn = document.getElementById("btn-start");
+      const banner = document.getElementById("load-status");
+      const countLabel = document.getElementById("total-count-label");
+
+      startBtn.disabled = (state === "loading" || state === "error");
+
+      if (state === "loading") {
+        countLabel.innerText = "…";
+        banner.hidden = true;
+        return;
+      }
+
+      if (state === "ready") {
+        banner.hidden = true;
+        return;
+      }
+
+      banner.hidden = false;
+      banner.className = "load-status " + state;
+      banner.innerText = message;
     }
 
     function adjustCount(delta) {
@@ -933,7 +1077,9 @@
 
     function updateCountDisplay() {
       // 문항이 삭제되면 등록 수보다 큰 출제 수가 남을 수 있어 표시 직전에 보정
-      selectedCount = Math.min(Math.max(1, selectedCount), Math.max(1, questions.length));
+      selectedCount = questions.length === 0
+        ? 0
+        : Math.min(Math.max(1, selectedCount), questions.length);
       document.getElementById("total-count-label").innerText = questions.length;
       document.getElementById("selected-count").innerText = selectedCount;
       document.getElementById("manage-count").innerText = questions.length;
@@ -958,6 +1104,10 @@
     }
 
     function startQuiz() {
+      if (!isReady) {
+        alert("문항을 불러오는 중입니다. 잠시 후 다시 시도해 주세요.");
+        return;
+      }
       if (questions.length === 0) {
         alert("등록된 문제가 없습니다. 관리 메뉴에서 문제를 추가해주세요.");
         return;
@@ -1171,6 +1321,21 @@
         if (editingIndex === idx) cancelEdit();
         renderManageList();
       }
+    }
+
+    /* 이 브라우저의 수정본을 버리고 questions.json 원본으로 되돌린다 */
+    function resetToOfficial() {
+      if (officialQuestions.length === 0) {
+        alert("공식 문항을 불러오지 못해 되돌릴 수 없습니다.");
+        return;
+      }
+      if (!confirm("이 브라우저에서 수정한 내용을 모두 버리고\nquestions.json의 공식 문항으로 되돌립니다.\n\n계속할까요?")) return;
+
+      questions = officialQuestions.map(q => ({ ...q }));
+      saveToStorage();
+      renderManageList();
+      cancelEdit();
+      alert(`공식 문항 ${questions.length}개로 되돌렸습니다.`);
     }
 
     window.onload = init;
