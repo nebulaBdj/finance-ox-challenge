@@ -100,14 +100,16 @@
     }
 
     .ci-badge {
-      background: transparent;
-      padding: 0;
+      background: #ffffff;
+      padding: 7px 12px;
+      border-radius: 10px;
       display: flex;
       align-items: center;
+      flex: none;
     }
 
     .ci-img {
-      height: 48px;
+      height: 34px;
       width: auto;
       max-width: 100%;
       object-fit: contain;
@@ -598,7 +600,8 @@
       header { padding: 12px 16px; gap: 10px; }
       .header-ci-wrap { gap: 10px; }
       .header-divider { display: none; }
-      .ci-img { height: 34px; }
+      .ci-badge { padding: 5px 9px; border-radius: 8px; }
+      .ci-img { height: 24px; }
       .header-title-text {
         order: 3;
         width: 100%;
@@ -655,7 +658,8 @@
     /* ── 소형 기기 ── */
     @media (max-width: 380px) {
       .header-title-text { font-size: 0.88rem; }
-      .ci-img { height: 30px; }
+      .ci-badge { padding: 4px 8px; }
+      .ci-img { height: 21px; }
       .nav-btn { padding: 7px 10px; font-size: 0.82rem; }
       .content-area { padding: 20px 12px; }
       .ox-card-btn { padding: 18px 6px; }
@@ -664,11 +668,19 @@
       .input-wrapper { padding: 14px 14px; }
     }
 
+    /* ── 초소형 기기: 설정 카드 세로 스택 ── */
+    @media (max-width: 350px) {
+      .input-wrapper { flex-direction: column; align-items: stretch; gap: 12px; }
+      .num-selector { justify-content: space-between; }
+      .input-label { font-size: 1rem; }
+    }
+
     /* ── 가로 모드(낮은 높이) ── */
     @media (max-height: 560px) and (orientation: landscape) {
       body { align-items: flex-start; }
       header { padding-top: 8px; padding-bottom: 8px; }
-      .ci-img { height: 30px; }
+      .ci-badge { padding: 5px 9px; }
+      .ci-img { height: 22px; }
       .content-area { min-height: auto; padding-top: 18px; padding-bottom: 18px; }
       .hero-tag { margin-bottom: 10px; }
       .home-title { font-size: clamp(1.5rem, 5.5vh, 2.2rem); margin-bottom: 10px; }
@@ -716,10 +728,7 @@
     <header>
       <div class="header-ci-wrap">
         <div class="ci-badge">
-          <svg class="ci-img" viewBox="0 0 160 48" role="img" aria-label="금융투자협회">
-            <text x="5" y="32" font-family="Pretendard, sans-serif" font-weight="900" font-size="20" fill="#ffffff">금융투자협회</text>
-            <path d="M138 10 L154 24 L138 38 Z" fill="#f59e0b"></path>
-          </svg>
+          <img src="kofia-logo.png" alt="금융투자협회" class="ci-img" width="400" height="159">
         </div>
         <div class="header-divider"></div>
       </div>
@@ -756,7 +765,7 @@
             </div>
             <div class="num-selector">
               <button class="num-btn" onclick="adjustTime(-5)" aria-label="제한시간 줄이기">−</button>
-              <div class="num-display" id="selected-time">15</div>
+              <div class="num-display" id="selected-time">10</div>
               <button class="num-btn" onclick="adjustTime(5)" aria-label="제한시간 늘리기">+</button>
             </div>
           </div>
@@ -779,7 +788,7 @@
               <circle cx="12" cy="12" r="10"></circle>
               <polyline points="12 6 12 12 16 14"></polyline>
             </svg>
-            <span id="time-left-text">15s</span>
+            <span id="time-left-text">10s</span>
           </div>
         </div>
 
@@ -874,8 +883,8 @@
     let currentIndex = 0;
     let score = 0;
     let selectedCount = 5;
-    let selectedTimeLimit = 15; // 기본 15초
-    let timeLeft = 15;
+    let selectedTimeLimit = 10; // 기본 10초
+    let timeLeft = 10;
     let timerInterval = null;
     let editingIndex = -1;
 
