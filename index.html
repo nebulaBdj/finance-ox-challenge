@@ -441,6 +441,25 @@
     }
 
     /* 4. 문제 관리 화면 */
+    .local-notice {
+      background: rgba(245, 158, 11, 0.12);
+      border: 1px solid rgba(245, 158, 11, 0.45);
+      border-radius: 12px;
+      padding: 12px 16px;
+      margin-bottom: 18px;
+      font-size: 0.95rem;
+      line-height: 1.55;
+      color: #fcd34d;
+      word-break: keep-all;
+    }
+    .local-notice strong {
+      display: block;
+      color: var(--primary-gold);
+      font-weight: 800;
+      font-size: 1.02rem;
+      margin-bottom: 3px;
+    }
+
     .manage-head { font-size: clamp(1.1rem, 3.2vw, 1.4rem); font-weight: 800; margin-bottom: 14px; color: var(--primary-gold); }
 
     .manage-box {
@@ -639,6 +658,8 @@
       .result-wrap { padding: 10px 0; }
       .result-comment { margin-bottom: 28px; }
 
+      .local-notice { padding: 10px 12px; font-size: 0.86rem; margin-bottom: 14px; }
+      .local-notice strong { font-size: 0.94rem; }
       .manage-box { max-height: 42vh; margin-bottom: 18px; }
       .manage-row { flex-wrap: wrap; padding: 12px 14px; }
       .manage-info { flex: 1 1 60%; }
@@ -826,6 +847,11 @@
 
       <!-- 4. 문제 관리 화면 -->
       <div id="screen-manage" class="screen">
+        <div class="local-notice">
+          <strong>⚠️&nbsp; 등록한 문항은 이 브라우저에만 저장됩니다</strong>
+          다른 사람이 이 페이지에 접속해도 보이지 않고, 다른 기기·브라우저와도 공유되지 않습니다.
+          브라우저 사용 기록(사이트 데이터)을 지우면 사라지니 주의해 주세요.
+        </div>
         <div class="manage-head">📋 등록된 문항 목록 (<span id="manage-count">0</span>)</div>
         <div class="manage-box" id="manage-list"></div>
 
@@ -1103,17 +1129,39 @@
         return;
       }
 
-      if (editingIndex >= 0) {
+      const isEdit = editingIndex >= 0;
+      if (isEdit) {
         questions[editingIndex] = { question: qText, answer: ans, explanation: exp };
-        alert("문항 수정이 완료되었습니다.");
       } else {
         questions.push({ question: qText, answer: ans, explanation: exp });
-        alert("새 문항이 등록되었습니다.");
       }
 
+      // 실제로 저장한 뒤에 안내한다
       saveToStorage();
       renderManageList();
       cancelEdit();
+      notifySaved(isEdit);
+    }
+
+    /* 저장 위치 안내 — 첫 저장에는 전체 안내, 이후에는 한 줄로 */
+    let storageNoticeShown = false;
+    function notifySaved(isEdit) {
+      const head = isEdit ? "문항 수정이 완료되었습니다." : "새 문항이 등록되었습니다.";
+
+      if (storageNoticeShown) {
+        alert(head + "\n(이 브라우저에만 저장됩니다)");
+        return;
+      }
+
+      storageNoticeShown = true;
+      alert(
+        head + "\n\n" +
+        "※ 저장 위치 안내\n\n" +
+        "이 문항은 지금 사용 중인 브라우저에만 저장됩니다.\n\n" +
+        "· 다른 사람이 이 페이지에 접속해도 보이지 않습니다\n" +
+        "· 다른 기기 · 다른 브라우저와 공유되지 않습니다\n" +
+        "· 브라우저 사용 기록을 지우면 사라집니다"
+      );
     }
 
     function deleteQuestion(idx) {
