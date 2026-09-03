@@ -100,16 +100,15 @@
     }
 
     .ci-badge {
-      background: #ffffff;
-      padding: 7px 12px;
-      border-radius: 10px;
+      background: transparent;
+      padding: 0;
       display: flex;
       align-items: center;
       flex: none;
     }
 
     .ci-img {
-      height: 34px;
+      height: 48px;
       width: auto;
       max-width: 100%;
       object-fit: contain;
@@ -600,8 +599,7 @@
       header { padding: 12px 16px; gap: 10px; }
       .header-ci-wrap { gap: 10px; }
       .header-divider { display: none; }
-      .ci-badge { padding: 5px 9px; border-radius: 8px; }
-      .ci-img { height: 24px; }
+      .ci-img { height: 34px; }
       .header-title-text {
         order: 3;
         width: 100%;
@@ -658,8 +656,7 @@
     /* ── 소형 기기 ── */
     @media (max-width: 380px) {
       .header-title-text { font-size: 0.88rem; }
-      .ci-badge { padding: 4px 8px; }
-      .ci-img { height: 21px; }
+      .ci-img { height: 30px; }
       .nav-btn { padding: 7px 10px; font-size: 0.82rem; }
       .content-area { padding: 20px 12px; }
       .ox-card-btn { padding: 18px 6px; }
@@ -679,8 +676,7 @@
     @media (max-height: 560px) and (orientation: landscape) {
       body { align-items: flex-start; }
       header { padding-top: 8px; padding-bottom: 8px; }
-      .ci-badge { padding: 5px 9px; }
-      .ci-img { height: 22px; }
+      .ci-img { height: 30px; }
       .content-area { min-height: auto; padding-top: 18px; padding-bottom: 18px; }
       .hero-tag { margin-bottom: 10px; }
       .home-title { font-size: clamp(1.5rem, 5.5vh, 2.2rem); margin-bottom: 10px; }
