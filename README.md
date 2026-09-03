@@ -35,15 +35,20 @@
 
 ## 파일 구성
 
-| 파일 | 역할 |
-| --- | --- |
-| `index.html` | 앱 전체(HTML+CSS+JS) + 로고 base64 내장. **이 파일 하나면 동작합니다.** |
-| `kofia-logo.png` | 로고 원본 에셋(400×159, 팔레트 PNG 13KB). 페이지가 참조하지는 않으며, 로고를 교체할 때 쓰는 소스입니다. |
+저장소에는 `index.html`과 `README.md`뿐입니다. 로고를 포함한 모든 에셋이
+`index.html` 안에 들어 있어 별도 파일이 없습니다.
 
-로고를 바꾸려면 새 이미지를 base64로 변환해 `index.html`의 `.ci-img` `src` 값을 교체하세요:
+**로고 교체** — 새 이미지를 base64로 변환해 `.ci-img`의 `src` 값을 통째로 바꾸면 됩니다.
 
 ```bash
-base64 -i kofia-logo.png | tr -d "\n"
+base64 -i 새로고.png | tr -d '\n'
+```
+
+**현재 로고 추출** — 내장된 data URI에서 원본 PNG(400x159 팔레트 PNG, 13KB)를
+그대로 복원할 수 있습니다.
+
+```bash
+grep -o 'base64,[^"]*' index.html | head -1 | cut -d, -f2 | base64 -d > kofia-logo.png
 ```
 
 ## 로컬 실행
