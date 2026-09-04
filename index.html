@@ -1695,13 +1695,13 @@
       }
     }
 
-    /* 이 브라우저의 수정본을 버리고 questions.json 원본으로 되돌린다 */
+    /* 이 브라우저의 수정본을 버리고 questions.js 원본으로 되돌린다 */
     function resetToOfficial() {
       if (officialQuestions.length === 0) {
         alert("공식 문항을 불러오지 못해 되돌릴 수 없습니다.");
         return;
       }
-      if (!confirm("이 브라우저에서 수정한 내용을 모두 버리고\nquestions.json의 공식 문항으로 되돌립니다.\n\n계속할까요?")) return;
+      if (!confirm("이 브라우저에서 수정한 내용을 모두 버리고\nquestions.js의 공식 문항으로 되돌립니다.\n\n계속할까요?")) return;
 
       questions = officialQuestions.map(q => ({ ...q }));
       saveToStorage();
